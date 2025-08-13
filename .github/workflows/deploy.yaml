@@ -1,40 +1,75 @@
 name: Deploy Blood Pressure Tracker to AWS
 
 on:
+  # Trigger the deployment job on pushes to the main branch
   push:
     branches:
       - main
+  # Allow manual triggering of the bootstrap job
   workflow_dispatch:
 
 permissions:
-  id-token: write # This is required for OIDC
+  id-token: write # Required for OIDC to get the temporary token
   contents: read
 
 jobs:
-  deploy:
+  # This job runs ONLY when manually triggered from the GitHub Actions UI
+  bootstrap:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+    - name: Configure AWS credentials for Bootstrap
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-access-key-id: ${{ secrets.BOOTSTRAP_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.BOOTSTRAP_AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Set up Python
+    - name: Set up Python and Node
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '19'
 
-    - name: Install dependencies
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        npm install -g aws-cdk
+
+    - name: Run CDK Bootstrap
+      run: cdk bootstrap
+
+  # This job runs on every push to the main branch
+  deploy:
+    # This job should run after a bootstrap, or if bootstrap is not needed
+    needs: [bootstrap]
+    if: always() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials via OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }} # The less-privileged role
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Set up Python and Node
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '19'
+
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
@@ -42,5 +77,4 @@ jobs:
 
     - name: Synthesize and Deploy CDK Stack
       run: |
-        cdk synth
         cdk deploy --require-approval never
