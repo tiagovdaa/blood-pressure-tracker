@@ -20,56 +20,116 @@ Here is a high-level overview of the application's architecture:
 
 ## Detailed Setup Guide
 
+Deploying this project involves a one-time setup in AWS to establish a trust relationship with GitHub Actions, followed by the deployment itself.
+
 ### Prerequisites
 
-* An AWS Account and configured AWS CLI credentials.
+* An AWS Account.
+* An IAM User in your AWS account with `AdministratorAccess` permissions for the initial setup.
 * Python 3.8+ and pip.
 * Node.js and npm.
 * AWS CDK CLI: `npm install -g aws-cdk`
 * Git.
 
-### Deployment Steps
+---
 
-1.  **Clone the repository:**
+### **Part 1: One-Time AWS Environment Setup**
+
+This part creates the foundational resources and permissions needed for the pipeline to run securely.
+
+#### **Step 1: Bootstrap the AWS Environment**
+
+The CDK requires a set of resources (an S3 bucket, IAM roles) to manage deployments. This is a **one-time action per AWS account/region combination**.
+
+1.  Configure your local machine with the credentials of an IAM user that has `AdministratorAccess`.
+    ```bash
+    aws configure
+    ```
+2.  From the project's root directory, run the bootstrap command:
+    ```bash
+    cdk bootstrap
+    ```
+    This creates a CloudFormation stack named `CDKToolkit` in your account.
+
+#### **Step 2: Create the IAM OIDC Provider for GitHub**
+
+This tells your AWS account to trust authentication tokens from GitHub Actions.
+
+1.  In the AWS Console, navigate to the **IAM** service.
+2.  Go to **Identity providers** and click **Add provider**.
+3.  Select **OpenID Connect**.
+4.  For **Provider URL**, enter `https://token.actions.githubusercontent.com`.
+5.  Click **Get thumbprint**.
+6.  For **Audience**, enter `sts.amazonaws.com`.
+7.  Click **Add provider**.
+
+#### **Step 3: Create the IAM Role for the Pipeline**
+
+This role will be assumed by GitHub Actions to get temporary, secure credentials for deployment.
+
+1.  In IAM, go to **Roles** and click **Create role**.
+2.  For **Trusted entity type**, select **Web identity**.
+3.  Choose the **Identity provider** you just created (`token.actions.githubusercontent.com`).
+4.  For **Audience**, select `sts.amazonaws.com`.
+5.  Under "GitHub organization," specify your repository to restrict which workflows can use this role (e.g., `your-github-username/blood-pressure-tracker`).
+6.  Click **Next**.
+
+#### **Step 4: Attach Permissions to the Role**
+
+1.  On the "Add permissions" screen, click **Create policy**. This will open a new tab.
+2.  In the policy editor, switch to the **JSON** tab and paste the following policy. **Remember to replace `YOUR_ACCOUNT_ID` with your actual AWS Account ID.**
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "sts:AssumeRole",
+                "Resource": "arn:aws:iam::YOUR_ACCOUNT_ID:role/cdk-*-*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "ssm:GetParameter",
+                "Resource": "arn:aws:ssm:*:YOUR_ACCOUNT_ID:parameter/cdk-bootstrap/*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "cloudformation:DescribeStacks",
+                "Resource": "*"
+            }
+        ]
+    }
+    ```
+3.  Click **Next: Tags**, then **Next: Review**.
+4.  Give the policy a name (e.g., `GitHubActions-CDK-Pipeline-Policy`) and click **Create policy**.
+5.  Go back to the "Create role" browser tab. Refresh the list of policies and attach the policy you just created.
+6.  **IMPORTANT:** Also attach the `AWSCloudFormationFullAccess` managed policy. This gives the role the necessary permissions to deploy the application's resources.
+7.  Click **Next**.
+8.  Give the role a name (e.g., `GitHubActions-Deploy-Role`), review the details, and click **Create role**.
+9.  Click on the newly created role and copy its **ARN**. You will need this for the next step.
+
+---
+
+### **Part 2: GitHub Repository Setup**
+
+#### **Step 1: Add Secrets to GitHub**
+
+1.  In your GitHub repository, go to **Settings** > **Secrets and variables** > **Actions**.
+2.  Click **New repository secret** and add the following:
+    * **Name:** `AWS_ROLE_ARN`
+        **Value:** The ARN of the IAM role you created in the previous step.
+    * **Name:** `AWS_REGION`
+        **Value:** Your AWS region (e.g., `eu-west-1`).
+
+#### **Step 2: Deploy the Application**
+
+1.  Clone the repository:
     ```bash
     git clone <repository-url>
     cd <repository-name>
     ```
-
-2.  **Set up a Python virtual environment:**
-    ```bash
-    python -m venv .venv
-    source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
-    ```
-
-3.  **Install Python dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Bootstrap your AWS environment (if you haven't already):**
-    This command provisions the initial resources needed by the CDK to deploy stacks.
-    ```bash
-    cdk bootstrap aws://ACCOUNT-ID/REGION
-    ```
-    Replace `ACCOUNT-ID` and `REGION` with your AWS Account ID and preferred region.
-
-5.  **Deploy the CDK Stack:**
-    ```bash
-    cdk deploy
-    ```
-    The CDK will synthesize a CloudFormation template and deploy the resources. After deployment, it will output the API Gateway endpoint URLs.
-
-### GitHub Actions Deployment (CI/CD)
-
-This repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) for automated deployments. To use it, you need to configure an OIDC provider in your AWS account to allow GitHub Actions to assume an IAM role.
-
-1.  **Create an IAM OIDC Provider in AWS** for GitHub.
-2.  **Create an IAM Role** that the GitHub Actions workflow can assume. This role needs permissions to deploy CloudFormation stacks and manage the resources defined in this project (Lambda, API Gateway, DynamoDB, S3).
-3.  **Add the IAM Role ARN as a secret** in your GitHub repository with the name `AWS_ROLE_ARN`.
-4.  **Add the AWS Region as a secret** with the name `AWS_REGION`.
-
-With this configuration, any push to the `main` branch will trigger the workflow and deploy the application.
+2.  Push your code to the `main` branch. The GitHub Actions workflow defined in `.github/workflows/deploy.yml` will automatically trigger, assume the IAM role, and deploy your CDK stack.
 
 ## Usage Instructions
 
@@ -102,46 +162,6 @@ Send a `POST` request to the `/report` endpoint URL.
 
 This will generate a report named `on_demand_report_<timestamp>.txt` in your S3 bucket.
 
-### Weekly Reports
+---
 
-The weekly report is generated automatically every Monday at 2 AM UTC. The report will be named `weekly_summary_<date>.txt` and will contain the count of readings from the previous week.
-
-## Code Explanation
-
-### `stack/blood_pressure_stack.py`
-
-This file contains the core CDK code that defines all the AWS resources.
-* It creates a **DynamoDB Table** with a primary key `reading_id` (a UUID).
-* It creates an **S3 Bucket** to store reports.
-* It defines three **Lambda Functions**:
-    * `post_reading_lambda`: Receives data from the API Gateway, validates it, and stores it in DynamoDB.
-    * `on_demand_report_lambda`: Fetches all records from DynamoDB, creates a summary, and uploads it to S3.
-    * `weekly_report_lambda`: Fetches records from the last 7 days, creates a summary, and uploads it to S3.
-* It sets up an **API Gateway** with two routes (`/readings` and `/report`) that integrate with the corresponding Lambda functions.
-* It creates an **EventBridge Rule** to trigger the `weekly_report_lambda` on a schedule (`cron(0 2 ? * MON *)`).
-* It grants the necessary **IAM Permissions** for the Lambda functions to access the DynamoDB table and the S3 bucket.
-
-### `lambda/post_reading/post_reading.py`
-
-This function handles the logic for storing a new reading.
-1.  It receives the request body from API Gateway.
-2.  It validates the presence and format of `reading_datetime`, `systole`, and `dystole`.
-3.  It generates a unique `reading_id` using `uuid.uuid4()`.
-4.  It uses the `boto3` library to put the item into the DynamoDB table.
-5.  It returns a success or error response to the client.
-
-### `lambda/on_demand_report/on_demand_report.py`
-
-This function generates a report of all readings.
-1.  It scans the entire DynamoDB table to get all readings.
-2.  It calculates the total number of readings.
-3.  It formats the summary into a string.
-4.  It uploads this summary as a text file to the S3 bucket. The filename includes a timestamp to ensure uniqueness.
-
-### `lambda/weekly_report/weekly_report.py`
-
-This function generates a weekly summary.
-1.  It calculates the date range for the last 7 days.
-2.  It scans the DynamoDB table for readings within that date range.
-3.  It counts the number of readings found.
-4.  It formats the summary and uploads it to the S3 bucket with a filename indicating the week.
+*created by Tiago Almeida @ Debian Linux 13*
