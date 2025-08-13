@@ -1,0 +1,257 @@
+{
+  "version": "36.0.0",
+  "artifacts": {
+    "BloodPressureTrackerStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "BloodPressureTrackerStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "BloodPressureTrackerStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "BloodPressureTrackerStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1c82fbe44bdc5c73b4a43b6f2452f7c43406418656359f733dd223d6cd2cda7c.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "BloodPressureTrackerStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "BloodPressureTrackerStack.assets"
+      ],
+      "metadata": {
+        "/BloodPressureTrackerStack/BloodPressureReadings/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureReadings9BAA0546"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureReports/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureReportsA89B6574"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureReports/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureReportsPolicy5531E561"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureReports/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureReportsAutoDeleteObjectsCustomResource67895C2B"
+          }
+        ],
+        "/BloodPressureTrackerStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+          }
+        ],
+        "/BloodPressureTrackerStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/BloodPressureTrackerStack/PostReadingHandler/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PostReadingHandlerServiceRoleBDD0D9AA"
+          }
+        ],
+        "/BloodPressureTrackerStack/PostReadingHandler/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PostReadingHandlerServiceRoleDefaultPolicy79067DFD"
+          }
+        ],
+        "/BloodPressureTrackerStack/PostReadingHandler/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PostReadingHandler71E883C3"
+          }
+        ],
+        "/BloodPressureTrackerStack/OnDemandReportHandler/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "OnDemandReportHandlerServiceRole8446B127"
+          }
+        ],
+        "/BloodPressureTrackerStack/OnDemandReportHandler/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "OnDemandReportHandlerServiceRoleDefaultPolicy90164F6B"
+          }
+        ],
+        "/BloodPressureTrackerStack/OnDemandReportHandler/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "OnDemandReportHandler7EFE933E"
+          }
+        ],
+        "/BloodPressureTrackerStack/WeeklyReportHandler/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WeeklyReportHandlerServiceRole791B3FCE"
+          }
+        ],
+        "/BloodPressureTrackerStack/WeeklyReportHandler/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WeeklyReportHandlerServiceRoleDefaultPolicy9AE1F967"
+          }
+        ],
+        "/BloodPressureTrackerStack/WeeklyReportHandler/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WeeklyReportHandler47D9BAE4"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApiEB4E7099"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/CloudWatchRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApiCloudWatchRoleB3A9FFE7"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Account": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApiAccount4FF2C954"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApiDeployment667A99255e003176b28765951575c6b713a58ac9"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/DeploymentStage.prod/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApiDeploymentStageprodFEDF3E56"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApiEndpoint4552B421"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/readings/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireadings64D01F75"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/readings/POST/ApiPermission.BloodPressureTrackerStackBloodPressureApi13E9B155.POST..readings": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireadingsPOSTApiPermissionBloodPressureTrackerStackBloodPressureApi13E9B155POSTreadings16C89A95"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/readings/POST/ApiPermission.Test.BloodPressureTrackerStackBloodPressureApi13E9B155.POST..readings": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireadingsPOSTApiPermissionTestBloodPressureTrackerStackBloodPressureApi13E9B155POSTreadings2BB052D3"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/readings/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireadingsPOST34889728"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/report/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireportD2C91FD3"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/report/POST/ApiPermission.BloodPressureTrackerStackBloodPressureApi13E9B155.POST..report": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireportPOSTApiPermissionBloodPressureTrackerStackBloodPressureApi13E9B155POSTreport69435F10"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/report/POST/ApiPermission.Test.BloodPressureTrackerStackBloodPressureApi13E9B155.POST..report": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireportPOSTApiPermissionTestBloodPressureTrackerStackBloodPressureApi13E9B155POSTreport0CCDC727"
+          }
+        ],
+        "/BloodPressureTrackerStack/BloodPressureApi/Default/report/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BloodPressureApireportPOST32F44562"
+          }
+        ],
+        "/BloodPressureTrackerStack/WeeklyReportRule/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WeeklyReportRule3E0F4A7C"
+          }
+        ],
+        "/BloodPressureTrackerStack/WeeklyReportRule/AllowEventRuleBloodPressureTrackerStackWeeklyReportHandler6855AE3D": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "WeeklyReportRuleAllowEventRuleBloodPressureTrackerStackWeeklyReportHandler6855AE3D16247221"
+          }
+        ],
+        "/BloodPressureTrackerStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/BloodPressureTrackerStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/BloodPressureTrackerStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/BloodPressureTrackerStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "BloodPressureTrackerStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
